@@ -100,6 +100,19 @@ background-color: #D4D2D5;
      </item>
     </layout>
    </widget>
+   <widget class="QLabel" name="ipcam_window">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>30</y>
+      <width>841</width>
+      <height>421</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
