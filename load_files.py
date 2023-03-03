@@ -10,65 +10,89 @@ import pandas as pd
 
 from PyQt5 import QtWidgets, QtGui
 from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog
-from PyQt5.QtWidgets import QPushButton, QWidget, QMainWindow, QGridLayout
+from PyQt5.QtWidgets import QPushButton, QWidget, QMainWindow, QGridLayout, QStackedWidget, QDesktopWidget
 from PyQt5 import uic
 
+#     "http://ajay:aju13@192.168.0.101:8080/video?type=.mjpg")
+# ip = f'http://{username}:{password}192.168.0.101:8000/video'
 
 class UI(QMainWindow):
     def __init__(self):
         super(UI, self).__init__()   
         uic.loadUi("updated_design.ui", self)
+        screen = QDesktopWidget().screenGeometry()
+        self.screen_width = screen.width()
+        self.screen_height = screen.height()
+        print(f"{self.screen_width}x{self.screen_height}")
+        self.setWindowTitle("Wireless Extraction")
         
-        #Defining the three buttons used in home section
-        self.w = None
+        #Defining the buttons used in home section
+        self.capture = None
         self.ipcam_window = self.findChild(QLabel, 'ipcam_window')
         self.connect_ip_button = self.findChild(QPushButton, 'connect_ip_button')
         self.load_video_button = self.findChild(QPushButton, 'load_video_button')
-        # self.load_image_button = self.findChild(QPushButton, 'load_image_button')
+        self.stop_feed_button = self.findChild(QPushButton, 'stop_button')
+        self.start_detection_button = self.findChild(QPushButton, 'start_detection_button')
+        self.pageController = self.findChild(QStackedWidget, 'page_controller')
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
-        self.loading_text = "Creating Frames..."
         
         # directory connection
         self.connect_ip_button.clicked.connect(self.connect_ip)
         self.load_video_button.clicked.connect(self.load_directory)
+        self.stop_feed_button.clicked.connect(self.stop_ipcamera)
+        # self.start_detection_button.clicked.connect()
         
         #Yolo_v5 model
         self.model_path = os.path.join(os.getcwd(), 'V2_YOLOv5Character-20230224T134754Z-001', 'YOLOv5Character', 'yolov5', 'runs', 'train', 'exp3', 'weights', 'best.pt')
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', self.model_path)  # custom trained model
-
-                
-        # self.show()
         
+        if (self.pageController.widget(1).isEnabled()):
+            print("Page 1 enabled")
+        if (self.pageController.widget(0).isEnabled()):
+            print("Page 0 enabled")
+                    
     def connect_ip(self):
+        self.pageController.setCurrentIndex(1)
         ip = 'http://192.168.0.105:8000/video'
-        capture = cv2.VideoCapture(ip)
+        self.capture = cv2.VideoCapture(ip)
 
         while True:
-            flag, frame = capture.read()
+            flag, frame = self.capture.read()
             try:
-                # frame = cv2.resize(frame, (840, 420))
+                dimensions = self.calculate_dimensions()
+                print(dimensions)
+                frame = cv2.resize(frame, dimensions)
                 image = QtGui.QImage(
                     frame,
                     frame.shape[1],
                     frame.shape[0],
                     frame.shape[1] * 3,
                     QtGui.QImage.Format_RGB888
-                )       
+                )
                 self.ipcam_window.setPixmap(QtGui.QPixmap.fromImage(image))
-            except:
-                capture.release()
-                raise
-            
+            except Exception as e:
+                self.capture.release()
+                self.pageController.setCurrentIndex(0)
+                print("Something went wrong in connecting the IP Camera")
+                print(e)
+                break
+
             if cv2.waitKey(1) & 0xFF == ord('q') :
                 break
-            
-        capture.release()
-        cv2.destroyAllWindows()
-
-        # import cv2
-        #     "http://ajay:aju13@192.168.0.101:8080/video?type=.mjpg")
-        # ip = f'http://{username}:{password}192.168.0.101:8000/video'
-
+    
+    def calculate_dimensions(self):
+        width_95 = int(95 * self.screen_width / 100)
+        height_95 = int(95 * self.screen_height / 100)
+        return (width_95, height_95)
+        
+    def stop_ipcamera(self):
+        print("Stopped the feed...")
+        self.ipcam_window.setPixmap(QtGui.QPixmap())
+        self.capture.release()
+        cv2.destroyAllWindows()        
+        self.pageController.setCurrentIndex(0) 
+        
+        
     # Loading the file dialog box
     def load_directory(self):
         # home path 
@@ -149,7 +173,6 @@ class UI(QMainWindow):
             for i in range(size_of_table-1):
                 digits.append(temp_output['class'][i])
 
-            # print("Done")
 
             max_dist = 0
             for i in range(size_of_table-1):
@@ -162,33 +185,28 @@ class UI(QMainWindow):
                 if(temp_output['xmin'][index2] - temp_output['xmax'][i] > 0.34*max_dist):
                     index1 = i;
                 i += 1
-            # print("Done")
 
             i = size_of_table-1
             while (i > index2):
                 if(temp_output['xmin'][i] - temp_output['xmax'][index2] > 1.125*max_dist):
                     index3 = i;
                 i -= 1
-            # print("Done")
 
             i = 0
             c = 0
             while (i<=index1):
                 result[c] = result[c] + str(temp_output['class'][i])
                 i += 1
-            # print("Done")
 
             c = 1
             while (i<=index2):
                 result[c] = result[c] + str(temp_output['class'][i])
                 i += 1
-            # print("Done")
 
             c = 2
             while (i<=index3):
                 result[c] = result[c] + str(temp_output['class'][i])
                 i += 1
-            # print("Done")
 
             c = 3
             while (i<size_of_table):
@@ -197,31 +215,22 @@ class UI(QMainWindow):
                 
             field_names = ['File_name', 'Display_1', 'Display_2', 'Display_3', 'Display_4']
             # print(result)
+    
             timestamps.append(image.split('.')[0])
             region1.append(result[0])
             region2.append(result[1])
             region3.append(result[2])
             region4.append(result[3])
             
-            # dict = {"File_name": image, "Display_1":result[0], "Display_2":result[1], "Display_3":result[2], "Display_4":result[3]}
-            # with open('./output/Predicted_Values.csv', 'a') as csv_file:
-            #     dict_object = csv.DictWriter(csv_file, fieldnames=field_names) 
-
-            #     dict_object.writerow(dict)
-
-        #     region_01.append(result[0])
-        #     region_02.append(result[1])
-        #     region_03.append(result[2])
-        #     region_04.append(result[3])
         output = pd.DataFrame(data={'Timestamps': timestamps, 'Region-01': region1, 'Region-02': region2, 'Region-03': region3, 'Region-04': region4})
-        output.to_csv("./output/test_dataset.csv", index=False)
+        output.to_csv("./output/test_dataset.csv", columns=["Timestamps", "Region_01", "Region_02", "Region_03", "Region_04"], index=False)
         print("Detection completed successfully!")
 
 
     
-    
-app = QApplication(sys.argv)
-# UIWindow = UI()
-w = UI()
-w.show()
-sys.exit(app.exec_())
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    # UIWindow = UI()
+    w = UI()
+    w.show()
+    sys.exit(app.exec_())
