@@ -148,7 +148,7 @@ class UI(QMainWindow):
         region4 = []
         
         for counter, image in enumerate(frames_directory):
-            if counter  == 85:
+            if counter  == 50:
                 print(f"{counter} images detection completed")
                 break
             prediction = self.model(os.path.join(path, image), size=960)
@@ -213,17 +213,17 @@ class UI(QMainWindow):
                 result[c] = result[c] + str(temp_output['class'][i])
                 i += 1
                 
-            field_names = ['File_name', 'Display_1', 'Display_2', 'Display_3', 'Display_4']
+            # field_names = ['File_name', 'Display_1', 'Display_2', 'Display_3', 'Display_4']
             # print(result)
     
-            timestamps.append(image.split('.')[0])
+            timestamps.append(str(image.split('.')[0]))
             region1.append(result[0])
             region2.append(result[1])
             region3.append(result[2])
             region4.append(result[3])
             
         output = pd.DataFrame(data={'Timestamps': timestamps, 'Region-01': region1, 'Region-02': region2, 'Region-03': region3, 'Region-04': region4})
-        output.to_csv("./output/test_dataset.csv", columns=["Timestamps", "Region_01", "Region_02", "Region_03", "Region_04"], index=False)
+        output.to_csv("./output/predicted.csv", index=False)
         print("Detection completed successfully!")
 
 
