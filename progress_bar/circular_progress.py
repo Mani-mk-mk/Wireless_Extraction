@@ -1,6 +1,9 @@
-from PySide6.QtCore import *
-from PySide6.QtGui import *
-from PySide6.QtWidgets import *
+# from PySide6.QtCore import *
+# from PySide6.QtGui import *
+# from PySide6.QtWidgets import *
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
 
 class CircularProgress(QWidget):
     def __init__(self):
@@ -46,8 +49,8 @@ class CircularProgress(QWidget):
     def paintEvent(self, event):
         width = self.width - self.progress_width
         height = self.height - self.progress_width
-        margin = self.progress_width / 2
-        value = self.value * 360 / self.max_value
+        margin = self.progress_width // 2
+        value = self.value * 360 // self.max_value
 
         # painter
         paint = QPainter()
@@ -75,18 +78,18 @@ class CircularProgress(QWidget):
 
         # create arc
         pen.setColor(QColor(self.progress_color))
-        paint.setPen(pen)        
+        paint.setPen(pen)
         paint.drawArc(margin, margin, width, height, -90 * 16, -value * 16)
 
         #  create text
         if self.enable_text:
-            pen.setColor(QColor(self.text_color))
-            paint.setPen(pen)
-            paint.drawText(rect, Qt.AlignCenter, f'{self.value}{self.suffix}')
+            self._extracted_from_paintEvent_38(pen, paint, rect)
+        self._extracted_from_paintEvent_38(pen, paint, rect)
+        paint.end()
 
+    # TODO Rename this here and in `paintEvent`
+    def _extracted_from_paintEvent_38(self, pen, paint, rect):
         pen.setColor(QColor(self.text_color))
         paint.setPen(pen)
-        paint.drawText(rect, Qt.AlignCenter, f'{self.value}{self.suffix}')     
-
-        paint.end()
+        paint.drawText(rect, Qt.AlignCenter, f'{self.value}{self.suffix}')
 

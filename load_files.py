@@ -1,6 +1,8 @@
 import sys
 import os
 import shutil
+import threading
+import time
 
 import torch
 import cv2
@@ -9,16 +11,19 @@ import numpy as np
 import pandas as pd
 
 from PyQt5 import QtWidgets, QtGui
+from PyQt5.QtCore import QThread
 from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog
 from PyQt5.QtWidgets import QPushButton, QWidget, QMainWindow, QGridLayout, QStackedWidget, QDesktopWidget
 from PyQt5 import uic
+
+from progress_bar.main import SplashScreen
 
 #     "http://ajay:aju13@192.168.0.101:8080/video?type=.mjpg")
 # ip = f'http://{username}:{password}192.168.0.101:8000/video'
 
 class UI(QMainWindow):
     def __init__(self):
-        super(UI, self).__init__()   
+        super(UI, self).__init__() 
         uic.loadUi("updated_design.ui", self)
         screen = QDesktopWidget().screenGeometry()
         self.screen_width = screen.width()
@@ -28,6 +33,7 @@ class UI(QMainWindow):
         
         #Defining the buttons used in home section
         self.capture = None
+        self.progress = 0
         self.ipcam_window = self.findChild(QLabel, 'ipcam_window')
         self.connect_ip_button = self.findChild(QPushButton, 'connect_ip_button')
         self.load_video_button = self.findChild(QPushButton, 'load_video_button')
@@ -99,10 +105,22 @@ class UI(QMainWindow):
         path, _ = QFileDialog.getOpenFileName(self, 'Open File', os.path.expanduser("~"), "Video Files (*.mp4; *.mkv)")
         print(path)
         self.create_frames(path)
-        # self.filename.setText(path)
+        # self.frames_function(path)
+    
+    # def show_loading_screen(self):
+    #     self.hide()
+    #     self.progressBar = SplashScreen()
+    #     self.progressBar.show()
+    def hide_progressBar(self):
+        self.progressBar.hide()
+        self.show()
+    
     
     def create_frames(self, file_path):
-        # self.ipcam_window.setText(self.loading_text)
+        # print(self.progressBar.text)
+        # self.hide()
+        # self.progressBar = SplashScreen()
+        # self.progressBar.finished.connect(self.hide_progressBar)
         print("Creating frames...")
         file_name = file_path.split("/")[-1]
         file_name = file_name.split(".")[0]
@@ -129,12 +147,18 @@ class UI(QMainWindow):
             # resized_frame = cv2.resize(frame, (960, 960))
             cv2.imwrite(os.path.join(directory, f'{counter/fps}.jpg'), frame)
         capture.release()
+        # self.progress = 10
+        # self.progressBar.update(self.progress)
+        #10% completed => crating frames
+        #90% detection => 10% + 100/3591 %
         # self.ipcam_window.setText("")
         print(f"{counter} frames created successfully!")
         self.detect_frames(directory)
         return
     
     def detect_frames(self, path):
+        start = time.time()
+
         print("Detecting frames...")
         frames_directory = os.listdir(path=path)
         self.model.conf=0.50
@@ -221,7 +245,14 @@ class UI(QMainWindow):
             region2.append(result[1])
             region3.append(result[2])
             region4.append(result[3])
-            
+            # if counter % 352 == 0:
+            #     print("Trying to update the progress")
+            #     self.progress = self.progress + 1
+            #     self.progressBar.update(self.progress)
+        
+        # self.progressBar.hide()
+        # self.show()
+        print("Time taken: ", time.time() - start)
         output = pd.DataFrame(data={'Timestamps': timestamps, 'Region-01': region1, 'Region-02': region2, 'Region-03': region3, 'Region-04': region4})
         output.to_csv("./output/predicted.csv", index=False)
         print("Detection completed successfully!")
