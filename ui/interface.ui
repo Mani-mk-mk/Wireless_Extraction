@@ -567,7 +567,7 @@ QPushButton:hover {
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>0</number>
+                 <number>1</number>
                 </property>
                 <widget class="QWidget" name="home_page_2">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -843,7 +843,7 @@ QPushButton:hover {
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QLabel" name="label_13">
+                          <widget class="QLabel" name="ip_window">
                            <property name="text">
                             <string/>
                            </property>
@@ -901,7 +901,7 @@ QPushButton:hover {
                            </property>
                            <layout class="QHBoxLayout" name="horizontalLayout_17">
                             <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                             <widget class="QPushButton" name="ipcam_button_5">
+                             <widget class="QPushButton" name="go_back_camera">
                               <property name="minimumSize">
                                <size>
                                 <width>240</width>
@@ -943,7 +943,7 @@ QPushButton:hover {
                              </widget>
                             </item>
                             <item alignment="Qt::AlignHCenter|Qt::AlignVCenter">
-                             <widget class="QPushButton" name="upload_button_5">
+                             <widget class="QPushButton" name="start_detection_camera">
                               <property name="minimumSize">
                                <size>
                                 <width>240</width>

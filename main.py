@@ -1,20 +1,19 @@
 import os
 import sys
-import shutil
 
 import torch
 import csv
-import numpy as np
-import pandas as pd
+import cv2
 
 from threads.upload_thread import WorkerThread
 from threads.frames_thread import FramesThread
 from threads.detection_thread import DetectionThread
+from threads.ip_thread import IpThread
 
-from PyQt5 import Qt, QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QThread, QPropertyAnimation, QFileSystemWatcher
+from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5.QtCore import QPropertyAnimation, QFileSystemWatcher
 from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QTableWidgetItem
-from PyQt5.QtWidgets import QPushButton, QFrame, QWidget, QMainWindow, QGridLayout, QStackedWidget, QDesktopWidget
+from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget
 from PyQt5 import uic
 from ui import resources
 
@@ -77,24 +76,34 @@ class WirelessExtraction(QMainWindow):
         self.frame_image = self.findChild(QLabel, 'frame_image')
         self.video_info = self.findChild(QLabel, 'video_info')
         
+        self.ip_window_label = self.findChild(QLabel, 'ip_window')    
+        
         self.detection_table = self.findChild(QTableWidget, 'detected_values')
         
         self.connect_ip_button.clicked.connect(self.connect_ipcam)
         self.upload_button.clicked.connect(self.upload)
         
     def connect_ipcam(self):
-        #flow
-        #Once clicked we have to use the threaded_queue written by Ajay
-        #We have to change the page number
-        #Show if the frame is proper then start annotations
-        #Apart from this one thing we need to do is use the annoying table widget
-        # which god knows why everyone want 
+        self.home_page_controller.setCurrentIndex(1)
         print("Ip button camera clicked")
-        
+        self.ipcam_thread = IpThread(self.model, stream_id='rtsp://192.168.0.105:8000/h264_pcm.sdp')
+        self.ipcam_thread.new_frame.connect(self.update_frame)
+        self.ipcam_thread.start()
+    
+    def update_frame(self, frame):
+        # Convert BGR frame to RGB format for displaying in QLabel
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Create QImage from numpy array
+        h, w, c = frame.shape
+        bytesPerLine = c * w
+        qImg = QtGui.QImage(frame.data, w, h, bytesPerLine, QtGui.QImage.Format_RGB888)
+        # Display QImage in QLabel
+        self.ip_window_label.setPixmap(QtGui.QPixmap.fromImage(qImg))    
+    
     def upload(self):
         print("Upload button clicked")
         self.load_directory()
-        
         
     def load_directory(self):
         # home path
