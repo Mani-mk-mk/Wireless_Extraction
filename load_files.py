@@ -117,10 +117,6 @@ class UI(QMainWindow):
     
     
     def create_frames(self, file_path):
-        # print(self.progressBar.text)
-        # self.hide()
-        # self.progressBar = SplashScreen()
-        # self.progressBar.finished.connect(self.hide_progressBar)
         print("Creating frames...")
         file_name = file_path.split("/")[-1]
         file_name = file_name.split(".")[0]
@@ -245,13 +241,6 @@ class UI(QMainWindow):
             region2.append(result[1])
             region3.append(result[2])
             region4.append(result[3])
-            # if counter % 352 == 0:
-            #     print("Trying to update the progress")
-            #     self.progress = self.progress + 1
-            #     self.progressBar.update(self.progress)
-        
-        # self.progressBar.hide()
-        # self.show()
         print("Time taken: ", time.time() - start)
         output = pd.DataFrame(data={'Timestamps': timestamps, 'Region-01': region1, 'Region-02': region2, 'Region-03': region3, 'Region-04': region4})
         output.to_csv("./output/predicted.csv", index=False)
