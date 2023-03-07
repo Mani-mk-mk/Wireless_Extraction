@@ -12,7 +12,7 @@ from threads.ip_thread import IpThread
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QFileSystemWatcher
-from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QTableWidgetItem
+from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget
 from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget
 from PyQt5 import uic
 from ui import resources
@@ -53,7 +53,7 @@ class WirelessExtraction(QMainWindow):
         self.about_button = self.findChild(QPushButton, 'info_button')
         self.signout_button = self.findChild(QPushButton, 'signout_button')
         
-        self.home_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.home_page_index))
+        self.home_button.clicked.connect(self.go_to_home)
         self.history_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.history_page_index))
         self.guidelines_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.guidelines_page_index))
         self.settings_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.settings_page_index))
@@ -79,9 +79,17 @@ class WirelessExtraction(QMainWindow):
         self.ip_window_label = self.findChild(QLabel, 'ip_window')    
         
         self.detection_table = self.findChild(QTableWidget, 'detected_values')
+        self.detection_table.setStyleSheet("font: 12pt 'Seoge UI'")
+        self.detection_table.setStyleSheet("QTableView::item:selected { background-color: #0078d7; color: #fff; }")
+        self.detection_table.setAlternatingRowColors(True)
+        self.detection_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         
         self.connect_ip_button.clicked.connect(self.connect_ipcam)
         self.upload_button.clicked.connect(self.upload)
+        
+    def go_to_home(self):
+        self.page_controller.setCurrentIndex(self.home_page_index)
+        self.home_page_controller.setCurrentIndex(self.home_page_index)
         
     def connect_ipcam(self):
         self.home_page_controller.setCurrentIndex(1)
@@ -132,7 +140,7 @@ class WirelessExtraction(QMainWindow):
             print(path)
             self.detector_thread = DetectionThread(path, self.model)
             self.detector_thread.start()
-        self.detection_table.setRowCount(15)
+        # self.detection_table.setRowCount(15)
         self.watcher = QFileSystemWatcher([r'./predicted.csv'])
         self.watcher.fileChanged.connect(self.update_table)
 
@@ -141,7 +149,7 @@ class WirelessExtraction(QMainWindow):
     def update_table(self):
         with open('predicted.csv', 'r') as csvfile:
             reader = csv.reader(csvfile)
-            rows = list(reader)[-15:]
+            rows = list(reader)
 
         # Clear table widget
         self.detection_table.setRowCount(0)
@@ -152,18 +160,7 @@ class WirelessExtraction(QMainWindow):
             for j, col in enumerate(row):
                 item = QtWidgets.QTableWidgetItem(col)
                 self.detection_table.setItem(i, j, item)
-
-        # If CSV file has less than 15 entries, add new entries one by one
-        if len(rows) < 15:
-            with open('predicted.csv', 'r') as csvfile:
-                reader = csv.reader(csvfile)
-                all_rows = list(reader)
-                new_rows = all_rows[-(15-len(rows)):]
-                for i, row in enumerate(new_rows):
-                    self.detection_table.insertRow(len(rows)+i)
-                    for j, col in enumerate(row):
-                        item = QtWidgets.QTableWidgetItem(col)
-                        self.detection_table.setItem(len(rows)+i, j, item)                
+                # self.detection_table.setColumnWidth(j, -1)
         
     def toggle_menu(self):
         sidebar_width = self.sidebar.width()
