@@ -107,7 +107,8 @@ class WirelessExtraction(QMainWindow):
         bytesPerLine = c * w
         qImg = QtGui.QImage(frame.data, w, h, bytesPerLine, QtGui.QImage.Format_RGB888)
         # Display QImage in QLabel
-        self.ip_window_label.setPixmap(QtGui.QPixmap.fromImage(qImg))    
+        self.ip_window_label.setPixmap(QtGui.QPixmap.fromImage(qImg))   
+        self.ip_window_label.setScaledContents(True) 
     
     def upload(self):
         print("Upload button clicked")

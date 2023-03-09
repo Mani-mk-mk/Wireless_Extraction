@@ -567,7 +567,7 @@ QPushButton:hover {
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>0</number>
+                 <number>1</number>
                 </property>
                 <widget class="QWidget" name="home_page_2">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -844,6 +844,12 @@ QPushButton:hover {
                          </property>
                          <item>
                           <widget class="QLabel" name="ip_window">
+                           <property name="sizePolicy">
+                            <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+                             <horstretch>0</horstretch>
+                             <verstretch>0</verstretch>
+                            </sizepolicy>
+                           </property>
                            <property name="text">
                             <string/>
                            </property>

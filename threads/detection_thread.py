@@ -20,7 +20,7 @@ class DetectionThread(QThread):
         self.model.iou=0.05
         self.model.multi_label = False
         self.model.max_det = 18
-        
+
         for counter, image in enumerate(frames_directory):
             if counter  == 25:
                 print(f"{counter} images detection completed")
@@ -32,7 +32,7 @@ class DetectionThread(QThread):
             output_table = prediction.pandas().xyxy[0].sort_values('xmin')  # im predictions (pandas)
             temp_output = pd.DataFrame(output_table)
             temp_output.to_csv("./output/test_dataset.csv")
-            
+
             temp_output = pd.read_csv("./output/test_dataset.csv")
             size_of_table = temp_output['class'].size
 
