@@ -33,7 +33,7 @@ class WirelessExtraction(QMainWindow):
         self.model_path = os.path.join(os.getcwd(), 'V2_YOLOv5Character-20230224T134754Z-001', 'YOLOv5Character', 'yolov5', 'runs', 'train', 'exp3', 'weights', 'best.pt')
         self.model = torch.hub.load('ultralytics/yolov5', 'custom', self.model_path)  # custom trained model
         
-        #pages
+        #pages index
         self.page_controller = self.findChild(QStackedWidget, 'page_controller')
         self.home_page_index = 0
         self.history_page_index = 1
@@ -46,24 +46,24 @@ class WirelessExtraction(QMainWindow):
         self.connect_ip_index = 1
         self.upload_page_index = 2
         
-        self.home_button = self.findChild(QPushButton, 'home_button')
-        self.history_button = self.findChild(QPushButton, 'history_button')
-        self.guidelines_button = self.findChild(QPushButton, 'guidelines_button')
-        self.settings_button = self.findChild(QPushButton, 'settings_button')
-        self.about_button = self.findChild(QPushButton, 'info_button')
-        self.signout_button = self.findChild(QPushButton, 'signout_button')
+        self.home_menu_button = self.findChild(QPushButton, 'home_button')
+        self.history_menu_button = self.findChild(QPushButton, 'history_button')
+        self.guidelines_menu_button = self.findChild(QPushButton, 'guidelines_button')
+        self.setting_menu_button = self.findChild(QPushButton, 'settings_button')
+        self.about_menu_button = self.findChild(QPushButton, 'info_button')
+        self.signout_menu_button = self.findChild(QPushButton, 'signout_button')
         
-        self.home_button.clicked.connect(self.go_to_home)
-        self.history_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.history_page_index))
-        self.guidelines_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.guidelines_page_index))
-        self.settings_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.settings_page_index))
-        self.about_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.about_page_index))
-        self.signout_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.signout_page_index))
+        self.home_menu_button.clicked.connect(self.go_to_home)
+        self.history_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.history_page_index))
+        self.guidelines_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.guidelines_page_index))
+        self.setting_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.settings_page_index))
+        self.about_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.about_page_index))
+        self.signout_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.signout_page_index))
         
         #toggle button
-        self.toggle_button = self.findChild(QPushButton, 'toggle_button')
+        self.toggle_menu_button = self.findChild(QPushButton, 'toggle_button')
         
-        self.toggle_button.clicked.connect(self.toggle_menu)
+        self.toggle_menu_button.clicked.connect(self.toggle_menu)
         
         
         #Sidebar
@@ -87,6 +87,25 @@ class WirelessExtraction(QMainWindow):
         self.connect_ip_button.clicked.connect(self.connect_ipcam)
         self.upload_button.clicked.connect(self.upload)
         
+        self.start_detection_ip = self.findChild(QPushButton, 'start_detection_camera')
+        self.stop_processing_button = self.findChild(QPushButton, 'stop_processing')
+        self.go_back_detection = self.findChild(QPushButton, 'go_back_camera')
+        
+        self.start_detection_ip.clicked.connect(self.start_detection_realtime)
+        self.stop_processing_button.clicked.connect(self.stop_processing_ipcam)
+        self.go_back_detection.clicked.connect(self.go_back)
+        
+    def __contains__(self, attribute):
+        return hasattr(self, attribute)
+
+
+    def start_detection_realtime(self):
+        self.ipcam_thread.detect_digits()
+        # pass
+        
+    def stop_processing_ipcam(self):
+        self.ipcam_thread.stop()
+        
     def go_to_home(self):
         self.page_controller.setCurrentIndex(self.home_page_index)
         self.home_page_controller.setCurrentIndex(self.home_page_index)
@@ -97,6 +116,18 @@ class WirelessExtraction(QMainWindow):
         self.ipcam_thread = IpThread(self.model, stream_id='rtsp://192.168.0.105:8000/h264_pcm.sdp')
         self.ipcam_thread.new_frame.connect(self.update_frame)
         self.ipcam_thread.start()
+        
+    def go_back(self):
+        #Stop the ipcam_thread
+        #this method not working need to do something
+        if hasattr(self, 'ipcam_thread'):
+            self.ipcam_thread.exit()
+        else: 
+            print("No thread of IP camera exists!")
+        
+        self.ip_window_label.clear()
+        self.go_to_home()
+        
     
     def update_frame(self, frame):
         # Convert BGR frame to RGB format for displaying in QLabel

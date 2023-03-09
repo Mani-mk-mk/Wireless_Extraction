@@ -13,7 +13,6 @@ class DetectionThread(QThread):
         self.model = model
         
     def run(self):  # sourcery skip: avoid-builtin-shadow
-        start = time.time()
         print("Detecting frames...")
         frames_directory = os.listdir(self.path)
         self.model.conf=0.50

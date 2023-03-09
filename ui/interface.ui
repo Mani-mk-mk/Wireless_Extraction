@@ -567,7 +567,7 @@ QPushButton:hover {
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>0</number>
                 </property>
                 <widget class="QWidget" name="home_page_2">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -1200,7 +1200,7 @@ QPushButton:hover {
                            </property>
                            <layout class="QVBoxLayout" name="verticalLayout_9">
                             <item>
-                             <widget class="QPushButton" name="pushButton_5">
+                             <widget class="QPushButton" name="stop_processing">
                               <property name="minimumSize">
                                <size>
                                 <width>240</width>

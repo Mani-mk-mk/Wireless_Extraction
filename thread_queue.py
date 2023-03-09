@@ -276,7 +276,7 @@ while True:
 
 
 
-        time.sleep(delay)
+        # time.sleep(delay)
         num_frames_processed += 1
         os.remove("frame_folder/frame"+str(num_frames_processed-1)+".jpg")
         key = cv2.waitKey(1)
