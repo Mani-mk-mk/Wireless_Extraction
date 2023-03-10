@@ -27,6 +27,8 @@ class WirelessExtraction(QMainWindow):
         screen = QDesktopWidget().screenGeometry()
         self.screen_width = screen.width()
         self.screen_height = screen.height()
+        self.output_path = os.path.join(os.getcwd(), 'output', 'predictions.csv')
+        self.realtime_path = os.path.join(os.getcwd(), 'output', 'realtime-predictions.csv')
         print(f"{self.screen_width}x{self.screen_height}")
         self.setWindowTitle("Wireless Extraction")
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
@@ -45,6 +47,9 @@ class WirelessExtraction(QMainWindow):
         self.home_page_controller = self.findChild(QStackedWidget, 'home_page_controller')
         self.connect_ip_index = 1
         self.upload_page_index = 2
+        
+        self.detection_page_controller = self.findChild(QStackedWidget, 'detection_controller')
+        self.tables_page_index = 1
         
         self.home_menu_button = self.findChild(QPushButton, 'home_button')
         self.history_menu_button = self.findChild(QPushButton, 'history_button')
@@ -79,10 +84,12 @@ class WirelessExtraction(QMainWindow):
         self.ip_window_label = self.findChild(QLabel, 'ip_window')    
         
         self.detection_table = self.findChild(QTableWidget, 'detected_values')
-        self.detection_table.setStyleSheet("font: 12pt 'Seoge UI'")
+        self.detection_table.setStyleSheet("font: 11pt 'Seoge UI'")
         self.detection_table.setStyleSheet("QTableView::item:selected { background-color: #0078d7; color: #fff; }")
         self.detection_table.setAlternatingRowColors(True)
         self.detection_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        
+        self.realtime_detection_table = self.findChild(QTableWidget, 'realtime_table')
         
         self.connect_ip_button.clicked.connect(self.connect_ipcam)
         self.upload_button.clicked.connect(self.upload)
@@ -100,8 +107,13 @@ class WirelessExtraction(QMainWindow):
 
 
     def start_detection_realtime(self):
-        self.ipcam_thread.detect_digits()
-        # pass
+        self.detection_page_controller.setCurrentIndex(self.tables_page_index)
+        self.ipcam_thread.start_detection()
+        # with open("realtime_predicted.csv", "w"):
+        #     pass
+        self.ip_watcher = QFileSystemWatcher([self.realtime_path])
+        self.ip_watcher.fileChanged.connect(lambda: self.update_table(self.realtime_path, self.realtime_detection_table))
+        
         
     def stop_processing_ipcam(self):
         self.ipcam_thread.stop()
@@ -173,25 +185,25 @@ class WirelessExtraction(QMainWindow):
             self.detector_thread = DetectionThread(path, self.model)
             self.detector_thread.start()
         # self.detection_table.setRowCount(15)
-        self.watcher = QFileSystemWatcher([r'./predicted.csv'])
-        self.watcher.fileChanged.connect(self.update_table)
+        self.watcher = QFileSystemWatcher([self.output_path])
+        self.watcher.fileChanged.connect(lambda: self.update_table(self.output_path, self.detection_table))
 
         #start new thread for detection
         
-    def update_table(self):
-        with open('predicted.csv', 'r') as csvfile:
+    def update_table(self, filename, table):
+        with open(filename, 'r') as csvfile:
             reader = csv.reader(csvfile)
             rows = list(reader)
 
         # Clear table widget
-        self.detection_table.setRowCount(0)
+        table.setRowCount(0)
 
         # Add rows to table widget
         for i, row in enumerate(rows):
-            self.detection_table.insertRow(i)
+            table.insertRow(i)
             for j, col in enumerate(row):
                 item = QtWidgets.QTableWidgetItem(col)
-                self.detection_table.setItem(i, j, item)
+                table.setItem(i, j, item)
                 # self.detection_table.setColumnWidth(j, -1)
         
     def toggle_menu(self):

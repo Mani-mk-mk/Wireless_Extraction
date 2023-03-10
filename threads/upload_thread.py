@@ -24,7 +24,7 @@ class WorkerThread(QThread):
         frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         # Calculate duration of video in seconds
         duration_sec = frame_count / fps
-        info += f"<strong>Duration: </strong> {duration_sec:.2f} <br />" + f"<strong>Location: </strong> {self.path} <br />"
+        info += f"<strong>Duration: </strong> {duration_sec:.2f} <br />" + f"<strong>FPS: </strong>{fps}\n" + f"<strong>Location: </strong> {self.path} <br />"
         info += f"<strong>Frames: </strong> {frame_count} <br />"
 
         self.video_info_ready.emit(info)

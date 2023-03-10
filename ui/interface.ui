@@ -791,7 +791,7 @@ QPushButton:hover {
                    <number>0</number>
                   </property>
                   <item>
-                   <widget class="QStackedWidget" name="stackedWidget_2">
+                   <widget class="QStackedWidget" name="detection_controller">
                     <widget class="QWidget" name="frame_check">
                      <layout class="QVBoxLayout" name="verticalLayout_5">
                       <property name="spacing">
@@ -1024,7 +1024,7 @@ QPushButton:hover {
                          </sizepolicy>
                         </property>
                         <property name="styleSheet">
-                         <string notr="true">background-color: rgb(128, 200, 255);</string>
+                         <string notr="true"/>
                         </property>
                         <property name="frameShape">
                          <enum>QFrame::StyledPanel</enum>
@@ -1049,17 +1049,7 @@ QPushButton:hover {
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QTableWidget" name="tableWidget">
-                           <column>
-                            <property name="text">
-                             <string>Timestamp</string>
-                            </property>
-                            <property name="font">
-                             <font>
-                              <pointsize>12</pointsize>
-                             </font>
-                            </property>
-                           </column>
+                          <widget class="QTableWidget" name="realtime_table">
                            <column>
                             <property name="text">
                              <string>Region_01</string>
@@ -1114,7 +1104,8 @@ QPushButton:hover {
                          </sizepolicy>
                         </property>
                         <property name="styleSheet">
-                         <string notr="true">background-color: rgb(229, 233, 255);</string>
+                         <string notr="true">
+</string>
                         </property>
                         <property name="frameShape">
                          <enum>QFrame::StyledPanel</enum>
@@ -1171,7 +1162,7 @@ QPushButton:hover {
                             <item>
                              <widget class="QLabel" name="label_14">
                               <property name="styleSheet">
-                               <string notr="true">background-color: rgb(255, 151, 222);</string>
+                               <string notr="true"/>
                               </property>
                               <property name="text">
                                <string/>

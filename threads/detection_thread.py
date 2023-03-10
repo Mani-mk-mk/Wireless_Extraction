@@ -11,6 +11,8 @@ class DetectionThread(QThread):
         super().__init__()
         self.path = path
         self.model = model
+        self.output_path = os.path.join(os.getcwd(), 'output', 'predictions.csv')
+        self.test_path = os.path.join(os.getcwd(), '.intermediate', 'test_dataset.csv')
         
     def run(self):  # sourcery skip: avoid-builtin-shadow
         print("Detecting frames...")
@@ -30,9 +32,9 @@ class DetectionThread(QThread):
             #Sort predicted bounding boxes based on the values of x coordinate of the boxes
             output_table = prediction.pandas().xyxy[0].sort_values('xmin')  # im predictions (pandas)
             temp_output = pd.DataFrame(output_table)
-            temp_output.to_csv("./output/test_dataset.csv")
+            temp_output.to_csv(self.test_path)
 
-            temp_output = pd.read_csv("./output/test_dataset.csv")
+            temp_output = pd.read_csv(self.test_path)
             size_of_table = temp_output['class'].size
 
             # Logic Combine digits to create a single valued number
@@ -89,7 +91,7 @@ class DetectionThread(QThread):
 
             field_names = ['File', 'Display_1', 'Display_2', 'Display_3', 'Display_4']
             dict = {"File": image,"Display_1":result[0], "Display_2":result[1], "Display_3":result[2], "Display_4":result[3]}
-            with open('predicted.csv', 'a', newline='') as csv_file:
+            with open(self.output_path, 'a', newline='') as csv_file:
                 dict_object = csv.DictWriter(csv_file, fieldnames=field_names) 
                 dict_object.writerow(dict)
 
