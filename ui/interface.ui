@@ -65,9 +65,15 @@
        </property>
        <item>
         <widget class="QFrame" name="toggle_container">
+         <property name="minimumSize">
+          <size>
+           <width>55</width>
+           <height>0</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
-           <width>100</width>
+           <width>55</width>
            <height>16777215</height>
           </size>
          </property>
@@ -100,13 +106,13 @@
            <widget class="QPushButton" name="toggle_button">
             <property name="minimumSize">
              <size>
-              <width>0</width>
+              <width>55</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>16777215</width>
+              <width>55</width>
               <height>16777215</height>
              </size>
             </property>
@@ -567,7 +573,7 @@ QPushButton:hover {
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>0</number>
+                 <number>1</number>
                 </property>
                 <widget class="QWidget" name="home_page_2">
                  <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -843,20 +849,7 @@ QPushButton:hover {
                           <number>0</number>
                          </property>
                          <item>
-                          <widget class="QLabel" name="ip_window">
-                           <property name="sizePolicy">
-                            <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
-                             <horstretch>0</horstretch>
-                             <verstretch>0</verstretch>
-                            </sizepolicy>
-                           </property>
-                           <property name="text">
-                            <string/>
-                           </property>
-                           <property name="alignment">
-                            <set>Qt::AlignCenter</set>
-                           </property>
-                          </widget>
+                          <layout class="QGridLayout" name="gridLayout_2"/>
                          </item>
                         </layout>
                        </widget>
@@ -944,7 +937,7 @@ QPushButton:hover {
 }</string>
                               </property>
                               <property name="text">
-                               <string>GO BACK</string>
+                               <string>CONNECT MORE</string>
                               </property>
                              </widget>
                             </item>
@@ -1104,8 +1097,7 @@ QPushButton:hover {
                          </sizepolicy>
                         </property>
                         <property name="styleSheet">
-                         <string notr="true">
-</string>
+                         <string notr="true"/>
                         </property>
                         <property name="frameShape">
                          <enum>QFrame::StyledPanel</enum>

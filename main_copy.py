@@ -1,3 +1,7 @@
+#The sole reason for creation of this file is to just have a copy of the original file
+# before I make changes.
+# I mean I do have git and github its just a lot easier.
+
 import os
 import sys
 
@@ -12,8 +16,8 @@ from threads.ip_thread import IpThread
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import QPropertyAnimation, QFileSystemWatcher
-from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QSizePolicy
-from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog, QGridLayout
+from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget
+from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog
 from PyQt5 import uic
 from ui import resources
 
@@ -57,8 +61,6 @@ class WirelessExtraction(QMainWindow):
         self.setting_menu_button = self.findChild(QPushButton, 'settings_button')
         self.about_menu_button = self.findChild(QPushButton, 'info_button')
         self.signout_menu_button = self.findChild(QPushButton, 'signout_button')
-        self.grid_layout = self.findChild(QGridLayout, 'gridLayout_2')
-        self.label_id = -1
         
         self.home_menu_button.clicked.connect(self.go_to_home)
         self.history_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.history_page_index))
@@ -83,8 +85,7 @@ class WirelessExtraction(QMainWindow):
         self.frame_image = self.findChild(QLabel, 'frame_image')
         self.video_info = self.findChild(QLabel, 'video_info')
         
-        # self.ip_window_label = self.findChild(QLabel, 'ip_window_1')    
-        self.ip_window_label = []    
+        self.ip_window_label = self.findChild(QLabel, 'ip_window')    
         
         self.detection_table = self.findChild(QTableWidget, 'detected_values')
         self.detection_table.setStyleSheet("font: 11pt 'Seoge UI'")
@@ -104,16 +105,15 @@ class WirelessExtraction(QMainWindow):
         
         self.start_detection_ip.clicked.connect(self.start_detection_realtime)
         self.stop_processing_button.clicked.connect(self.stop_processing_ipcam)
-        self.go_back_detection.clicked.connect(self.connect_ipcam)
+        self.go_back_detection.clicked.connect(self.go_back)
         
     def __contains__(self, attribute):
         return hasattr(self, attribute)
 
 
     def start_detection_realtime(self):
-        # self.detection_page_controller.setCurrentIndex(self.tables_page_index)
-        for _ in range(len(self.ipcam_thread)):
-            self.ipcam_thread[_].start_detection()
+        self.detection_page_controller.setCurrentIndex(self.tables_page_index)
+        self.ipcam_thread_1.start_detection()
         # with open("realtime_predicted.csv", "w"):
         #     pass
         self.ip_watcher = QFileSystemWatcher([self.realtime_path])
@@ -121,39 +121,41 @@ class WirelessExtraction(QMainWindow):
         
         
     def stop_processing_ipcam(self):
-        self.ipcam_thread.stop()
+        self.ipcam_thread_1.stop()
         
     def go_to_home(self):
         self.page_controller.setCurrentIndex(self.home_page_index)
         self.home_page_controller.setCurrentIndex(self.home_page_index)
         
     def connect_ipcam(self):
-        if self.home_page_controller.currentIndex() != 1:
-            print('Not one')
-            self.home_page_controller.setCurrentIndex(1)
+        self.home_page_controller.setCurrentIndex(1)
         input_stream, ok = QInputDialog.getText(self, 'IP Address', 'Enter IP Address: ')
         if ok:
             print(input_stream)
-            print("Ip button camera clicked")
-            self.ip_window_label.append(QLabel())
-            if len(self.ip_window_label) == 1:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 0, 0)
-            elif len(self.ip_window_label) == 2:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 0, 1)
-            elif len(self.ip_window_label) == 3:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 1, 0)
-            else:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 1, 1)
-            # rtsp://192.168.0.105:8000/h264_pcm.sdp
-            self.label_id += 1
-            self.ipcam_thread.append(IpThread(self.model, label_id=self.label_id, stream_id=input_stream))
-            self.ipcam_thread[self.label_id].new_frame.connect(self.update_frame)
-            self.ipcam_thread[self.label_id].start()
-                        
+        print("Ip button camera clicked")
+        self.ipcam_thread_1 = IpThread(self.model, label_id=1, stream_id='rtsp://192.168.0.105:8000/h264_pcm.sdp')
+        self.ipcam_thread_1.new_frame.connect(self.update_frame)
+        self.ipcam_thread_1.start()
+        
+    # def go_back(self):
+    #     #Stop the ipcam_thread
+    #     #this method not working need to do something
+    #     if hasattr(self, 'ipcam_thread'):
+    #         self.ipcam_thread_1.exit()
+    #     else: 
+    #         print("No thread of IP camera exists!")
+        
+    #     self.ip_window_label.clear()
+    #     self.go_to_home()
+
+    def go_back(self):
+        print("Clicked the second Ip camera button.")
+        self.ipcam_thread_2 = IpThread(self.model, label_id=2, stream_id='')
+        self.ipcam_thread_2.new_frame.connect(self.update_frame)
+        self.ipcam_thread_2.start()
+                
     
-    def update_frame(self, data):
-        frame = data[0]
-        idx = data[1]
+    def update_frame(self, frame, label_id):
         # Convert BGR frame to RGB format for displaying in QLabel
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
@@ -162,11 +164,9 @@ class WirelessExtraction(QMainWindow):
         bytesPerLine = c * w
         qImg = QtGui.QImage(frame.data, w, h, bytesPerLine, QtGui.QImage.Format_RGB888)
         # Display QImage in QLabel
-        self.ip_window_label[idx].setPixmap(QtGui.QPixmap.fromImage(qImg))   
-        self.ip_window_label[idx].setScaledContents(True)
-        self.ip_window_label[idx].setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
-        
-                
+        self.ip_window_label.setPixmap(QtGui.QPixmap.fromImage(qImg))   
+        self.ip_window_label.setScaledContents(True) 
+    
     def upload(self):
         print("Upload button clicked")
         self.load_directory()
