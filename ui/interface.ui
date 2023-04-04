@@ -212,7 +212,7 @@ QPushButton:hover {
          </property>
          <property name="minimumSize">
           <size>
-           <width>50</width>
+           <width>0</width>
            <height>0</height>
           </size>
          </property>
@@ -314,7 +314,7 @@ QPushButton:hover {
 	padding-bottom: 14px;
 	padding-left: 50px;
 	border-bottom: 1px solid grey;
-	background-image: url(:/icons/icons/archive.svg);
+	background-image: url(:/icons/icons/copy.svg);
 	background-repeat: none;
 	background-position: center left;
 }
@@ -326,7 +326,7 @@ QPushButton:hover {
 </string>
             </property>
             <property name="text">
-             <string>HISTORY</string>
+             <string>ANNOTATE</string>
             </property>
             <property name="iconSize">
              <size>
@@ -573,7 +573,7 @@ QPushButton:hover {
                  <string notr="true"/>
                 </property>
                 <property name="currentIndex">
-                 <number>1</number>
+                 <number>0</number>
                 </property>
                 <widget class="QWidget" name="home_page_2">
                  <layout class="QVBoxLayout" name="verticalLayout_3">

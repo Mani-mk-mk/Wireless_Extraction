@@ -1,7 +1,7 @@
 import os
+import subprocess
 import sys
 
-import torch
 import csv
 import cv2
 
@@ -16,12 +16,13 @@ from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QSi
 from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog, QGridLayout
 from PyQt5 import uic
 from ui import resources
+import labelImg
 
 #Comment out the below line in case you are running the filef for first time
 # os.system("Pyrcc5 ./ui/resources.qrc -o ./ui/resources.py")
 
 class WirelessExtraction(QMainWindow):
-    def __init__(self):
+    def __init__(self, model):
         super(WirelessExtraction, self).__init__() 
         uic.loadUi("./ui/interface.ui", self)
         screen = QDesktopWidget().screenGeometry()
@@ -32,8 +33,8 @@ class WirelessExtraction(QMainWindow):
         print(f"{self.screen_width}x{self.screen_height}")
         self.setWindowTitle("Wireless Extraction")
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
-        self.model_path = os.path.join(os.getcwd(), 'V2_YOLOv5Character-20230224T134754Z-001', 'YOLOv5Character', 'yolov5', 'runs', 'train', 'exp3', 'weights', 'best.pt')
-        self.model = torch.hub.load('ultralytics/yolov5', 'custom', self.model_path)  # custom trained model
+        
+        self.model = model
         
         #pages index
         self.page_controller = self.findChild(QStackedWidget, 'page_controller')
@@ -52,16 +53,20 @@ class WirelessExtraction(QMainWindow):
         self.tables_page_index = 1
         
         self.home_menu_button = self.findChild(QPushButton, 'home_button')
-        self.history_menu_button = self.findChild(QPushButton, 'history_button')
+        self.annotate_menu_button = self.findChild(QPushButton, 'history_button')
         self.guidelines_menu_button = self.findChild(QPushButton, 'guidelines_button')
         self.setting_menu_button = self.findChild(QPushButton, 'settings_button')
         self.about_menu_button = self.findChild(QPushButton, 'info_button')
         self.signout_menu_button = self.findChild(QPushButton, 'signout_button')
         self.grid_layout = self.findChild(QGridLayout, 'gridLayout_2')
         self.label_id = -1
+        self.tifr_logo = self.findChild(QLabel, 'label_11')
+        self.ves_logo = self.findChild(QLabel, 'label_12')
+        # self.tifr_logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        # self.ves_logo.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         
         self.home_menu_button.clicked.connect(self.go_to_home)
-        self.history_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.history_page_index))
+        self.annotate_menu_button.clicked.connect(lambda: subprocess.Popen(['labelimg']))
         self.guidelines_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.guidelines_page_index))
         self.setting_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.settings_page_index))
         self.about_menu_button.clicked.connect(lambda: self.page_controller.setCurrentIndex(self.about_page_index))
@@ -109,6 +114,8 @@ class WirelessExtraction(QMainWindow):
     def __contains__(self, attribute):
         return hasattr(self, attribute)
 
+    def signout(self):
+        pass
 
     def start_detection_realtime(self):
         # self.detection_page_controller.setCurrentIndex(self.tables_page_index)
@@ -133,22 +140,25 @@ class WirelessExtraction(QMainWindow):
             self.home_page_controller.setCurrentIndex(1)
         input_stream, ok = QInputDialog.getText(self, 'IP Address', 'Enter IP Address: ')
         if ok:
-            print(input_stream)
-            print("Ip button camera clicked")
-            self.ip_window_label.append(QLabel())
-            if len(self.ip_window_label) == 1:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 0, 0)
-            elif len(self.ip_window_label) == 2:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 0, 1)
-            elif len(self.ip_window_label) == 3:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 1, 0)
-            else:
-                self.grid_layout.addWidget(self.ip_window_label[-1], 1, 1)
-            # rtsp://192.168.0.105:8000/h264_pcm.sdp
-            self.label_id += 1
-            self.ipcam_thread.append(IpThread(self.model, label_id=self.label_id, stream_id=input_stream))
-            self.ipcam_thread[self.label_id].new_frame.connect(self.update_frame)
-            self.ipcam_thread[self.label_id].start()
+            self.set_ipcam_position(input_stream)
+
+    def set_ipcam_position(self, input_stream):
+        print(input_stream)
+        print("Ip button camera clicked")
+        self.ip_window_label.append(QLabel())
+        if len(self.ip_window_label) == 1:
+            self.grid_layout.addWidget(self.ip_window_label[-1], 0, 0)
+        elif len(self.ip_window_label) == 2:
+            self.grid_layout.addWidget(self.ip_window_label[-1], 0, 1)
+        elif len(self.ip_window_label) == 3:
+            self.grid_layout.addWidget(self.ip_window_label[-1], 1, 0)
+        else:
+            self.grid_layout.addWidget(self.ip_window_label[-1], 1, 1)
+        # rtsp://192.168.0.105:8000/h264_pcm.sdp
+        self.label_id += 1
+        self.ipcam_thread.append(IpThread(self.model, label_id=self.label_id, stream_id=input_stream))
+        self.ipcam_thread[self.label_id].new_frame.connect(self.update_frame)
+        self.ipcam_thread[self.label_id].start()
                         
     
     def update_frame(self, data):
