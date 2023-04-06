@@ -1,3 +1,4 @@
+import datetime
 import os
 import pandas as pd
 import time
@@ -16,6 +17,8 @@ class DThread(QThread):
 
     def run(self):
         self.frame = self.q.get()
+        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         print("Detection module starting...")
         self.captured_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
         result = self.model(self.captured_frame, size=960)
@@ -28,7 +31,7 @@ class DThread(QThread):
         temp_output = pd.read_csv(self.test_path)
         size_of_table = temp_output['class'].size
 
-        field_names = ['Display_1', 'Display_2', 'Display_3', 'Display_4']
+        field_names = ['Timestamp','Display_1', 'Display_2', 'Display_3', 'Display_4']
         if (size_of_table == 0):
 
         # If there are no digits present in the image
@@ -37,7 +40,7 @@ class DThread(QThread):
         ## CSV sheet to write NA if no digits present in the image.
 
             print("No Digits detected.")
-            dict = {"Display_1":"NA", "Display_2":"NA", "Display_3":"NA", "Display_4":"NA"}
+            dict = {"Timestamp": "NA", "Display_1":"NA", "Display_2":"NA", "Display_3":"NA", "Display_4":"NA"}
             with open(f'realtime_predicted_{self.label_id}.csv', 'a', newline='') as csv_file:
                 dict_object = csv.DictWriter(csv_file, fieldnames=field_names)
         else:
@@ -96,7 +99,7 @@ class DThread(QThread):
             result[c] = result[c] + str(temp_output['class'][i])
             i += 1
 
-        dict = {"Display_1":result[0], "Display_2":result[1], "Display_3":result[2], "Display_4":result[3]}
+        dict = {"Timestamp": self.timestamp, "Display_1":result[0], "Display_2":result[1], "Display_3":result[2], "Display_4":result[3]}
         with open(self.output_path, 'a', newline='') as csv_file:
             dict_object = csv.DictWriter(csv_file, fieldnames=field_names) 
             dict_object.writerow(dict)

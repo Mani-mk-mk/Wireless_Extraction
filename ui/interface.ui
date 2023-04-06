@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1043</width>
-    <height>674</height>
+    <height>675</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -212,13 +212,13 @@ QPushButton:hover {
          </property>
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>50</width>
            <height>0</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>55</width>
+           <width>53</width>
            <height>16777215</height>
           </size>
          </property>
@@ -398,7 +398,7 @@ QPushButton:hover {
 	padding-bottom: 14px;
 	padding-left: 50px;
 	border-bottom: 1px solid grey;
-	background-image: url(:/icons/icons/settings.svg);
+	background-image: url(:/icons/icons/terminal.svg);
 	background-repeat: none;
 	background-position: center left;
 }
@@ -409,7 +409,7 @@ QPushButton:hover {
 }</string>
             </property>
             <property name="text">
-             <string>SETTINGS</string>
+             <string>TRAINING</string>
             </property>
             <property name="iconSize">
              <size>
@@ -1045,12 +1045,34 @@ QPushButton:hover {
                           <widget class="QTableWidget" name="realtime_table">
                            <column>
                             <property name="text">
+                             <string>Timestamp</string>
+                            </property>
+                            <property name="font">
+                             <font>
+                              <pointsize>12</pointsize>
+                              <weight>75</weight>
+                              <italic>true</italic>
+                              <bold>true</bold>
+                             </font>
+                            </property>
+                            <property name="textAlignment">
+                             <set>AlignCenter</set>
+                            </property>
+                           </column>
+                           <column>
+                            <property name="text">
                              <string>Region_01</string>
                             </property>
                             <property name="font">
                              <font>
                               <pointsize>12</pointsize>
+                              <weight>75</weight>
+                              <italic>true</italic>
+                              <bold>true</bold>
                              </font>
+                            </property>
+                            <property name="textAlignment">
+                             <set>AlignCenter</set>
                             </property>
                            </column>
                            <column>
@@ -1060,7 +1082,13 @@ QPushButton:hover {
                             <property name="font">
                              <font>
                               <pointsize>12</pointsize>
+                              <weight>75</weight>
+                              <italic>true</italic>
+                              <bold>true</bold>
                              </font>
+                            </property>
+                            <property name="textAlignment">
+                             <set>AlignCenter</set>
                             </property>
                            </column>
                            <column>
@@ -1070,7 +1098,13 @@ QPushButton:hover {
                             <property name="font">
                              <font>
                               <pointsize>12</pointsize>
+                              <weight>75</weight>
+                              <italic>true</italic>
+                              <bold>true</bold>
                              </font>
+                            </property>
+                            <property name="textAlignment">
+                             <set>AlignCenter</set>
                             </property>
                            </column>
                            <column>
@@ -1080,7 +1114,15 @@ QPushButton:hover {
                             <property name="font">
                              <font>
                               <pointsize>12</pointsize>
+                              <weight>75</weight>
+                              <italic>true</italic>
+                              <bold>true</bold>
+                              <underline>false</underline>
+                              <strikeout>false</strikeout>
                              </font>
+                            </property>
+                            <property name="textAlignment">
+                             <set>AlignCenter</set>
                             </property>
                            </column>
                           </widget>

@@ -11,7 +11,8 @@ from threads.detection_thread import DetectionThread
 from threads.ip_thread import IpThread
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from PyQt5.QtCore import QPropertyAnimation, QFileSystemWatcher
+from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, QPropertyAnimation, QFileSystemWatcher
 from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QSizePolicy
 from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog, QGridLayout
 from PyQt5 import uic
@@ -29,7 +30,7 @@ class WirelessExtraction(QMainWindow):
         self.screen_width = screen.width()
         self.screen_height = screen.height()
         self.output_path = os.path.join(os.getcwd(), 'output', 'predictions.csv')
-        self.realtime_path = os.path.join(os.getcwd(), 'output', 'realtime-predictions.csv')
+        self.realtime_path = os.path.join(os.getcwd(), 'output', 'realtime-predictions_0.csv')
         print(f"{self.screen_width}x{self.screen_height}")
         self.setWindowTitle("Wireless Extraction")
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
@@ -92,7 +93,7 @@ class WirelessExtraction(QMainWindow):
         self.ip_window_label = []    
         
         self.detection_table = self.findChild(QTableWidget, 'detected_values')
-        self.detection_table.setStyleSheet("font: 11pt 'Seoge UI'")
+        self.detection_table.setStyleSheet("font: 10pt 'Segoe UI'")
         self.detection_table.setStyleSheet("QTableView::item:selected { background-color: #0078d7; color: #fff; }")
         self.detection_table.setAlternatingRowColors(True)
         self.detection_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
@@ -118,11 +119,11 @@ class WirelessExtraction(QMainWindow):
         pass
 
     def start_detection_realtime(self):
-        # self.detection_page_controller.setCurrentIndex(self.tables_page_index)
+        self.detection_page_controller.setCurrentIndex(self.tables_page_index)
         for _ in range(len(self.ipcam_thread)):
             self.ipcam_thread[_].start_detection()
-        # with open("realtime_predicted.csv", "w"):
-        #     pass
+        with open("realtime_predicted.csv", "w"):
+            pass
         self.ip_watcher = QFileSystemWatcher([self.realtime_path])
         self.ip_watcher.fileChanged.connect(lambda: self.update_table(self.realtime_path, self.realtime_detection_table))
         
@@ -145,7 +146,13 @@ class WirelessExtraction(QMainWindow):
     def set_ipcam_position(self, input_stream):
         print(input_stream)
         print("Ip button camera clicked")
-        self.ip_window_label.append(QLabel())
+        widget = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QLabel())
+        layout.addWidget(QPushButton("Watch changes"))
+        widget.setLayout(layout)
+        self.ip_window_label.append(widget)
+        # self.ip_window_label.append(QLabel())
         if len(self.ip_window_label) == 1:
             self.grid_layout.addWidget(self.ip_window_label[-1], 0, 0)
         elif len(self.ip_window_label) == 2:
@@ -154,7 +161,7 @@ class WirelessExtraction(QMainWindow):
             self.grid_layout.addWidget(self.ip_window_label[-1], 1, 0)
         else:
             self.grid_layout.addWidget(self.ip_window_label[-1], 1, 1)
-        # rtsp://192.168.0.105:8000/h264_pcm.sdp
+        # rtsp://192.168.0.102:8000/h264_pcm.sdp
         self.label_id += 1
         self.ipcam_thread.append(IpThread(self.model, label_id=self.label_id, stream_id=input_stream))
         self.ipcam_thread[self.label_id].new_frame.connect(self.update_frame)
@@ -172,9 +179,9 @@ class WirelessExtraction(QMainWindow):
         bytesPerLine = c * w
         qImg = QtGui.QImage(frame.data, w, h, bytesPerLine, QtGui.QImage.Format_RGB888)
         # Display QImage in QLabel
-        self.ip_window_label[idx].setPixmap(QtGui.QPixmap.fromImage(qImg))   
-        self.ip_window_label[idx].setScaledContents(True)
-        self.ip_window_label[idx].setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.ip_window_label[idx].layout().itemAt(0).widget().setPixmap(QtGui.QPixmap.fromImage(qImg))   
+        self.ip_window_label[idx].layout().itemAt(0).widget().setScaledContents(True)
+        self.ip_window_label[idx].layout().itemAt(0).widget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
         
                 
     def upload(self):
@@ -208,7 +215,7 @@ class WirelessExtraction(QMainWindow):
             print(path)
             self.detector_thread = DetectionThread(path, self.model)
             self.detector_thread.start()
-        # self.detection_table.setRowCount(15)
+        self.detection_table.setRowCount(15)
         self.watcher = QFileSystemWatcher([self.output_path])
         self.watcher.fileChanged.connect(lambda: self.update_table(self.output_path, self.detection_table))
 
@@ -227,6 +234,8 @@ class WirelessExtraction(QMainWindow):
             table.insertRow(i)
             for j, col in enumerate(row):
                 item = QtWidgets.QTableWidgetItem(col)
+                item.setFont(QFont("Segoe UI", 10))  # set font and font size
+                item.setTextAlignment(Qt.AlignCenter)  # set horizontal alignment
                 table.setItem(i, j, item)
                 # self.detection_table.setColumnWidth(j, -1)
         
@@ -241,6 +250,11 @@ class WirelessExtraction(QMainWindow):
         self.animation.setEasingCurve(QtCore.QEasingCurve.InOutQuart)
         self.animation.start()
         
+    def logout(self):
+        print("Logout...")
+        self.close()
+    #     self.main_window = LoginWindow()
+    #     self.main_window.show()
 
 
 if __name__ == "__main__":

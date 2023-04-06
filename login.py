@@ -3,14 +3,10 @@ import sys
 import torch
 from PyQt5 import uic
 from PyQt5 import QtSql
-from PyQt5.QtCore import QPropertyAnimation, QFileSystemWatcher
 from PyQt5.QtWidgets import QLabel, QApplication, QLineEdit
 from PyQt5.QtWidgets import QPushButton, QMainWindow, QStackedWidget, QDesktopWidget
 
 from main import WirelessExtraction
-
-# os.system("Pyrcc5 ./ui/resources.qrc -o ./ui/resources.py")
-
 
 class LoginWindow(QMainWindow):
     def __init__(self):

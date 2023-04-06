@@ -7,6 +7,7 @@ import numpy as np
 #importing required libraries for YOLO Implementation
 import torch
 import os
+import datetime
 import pandas as pd
 import csv
 
@@ -27,7 +28,9 @@ class IpThread(QThread):
         self.test_path = os.path.join(os.getcwd(), '.intermediate', 'test_dataset.csv')
         self.start_detections = False   
         self.q = queue.Queue()
+        # self.timestamp = None
         self.detections = DThread(self.q, self.label_id, self.model)
+        
 
     
     def run(self):

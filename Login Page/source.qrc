@@ -1,6 +1,0 @@
-<RCC>
-  <qresource prefix="newPrefix">
-    <file>TIFR-logo.png</file>
-    <file>VES-logo.png</file>
-  </qresource>
-</RCC>
