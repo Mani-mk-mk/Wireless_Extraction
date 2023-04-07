@@ -30,7 +30,7 @@ class WirelessExtraction(QMainWindow):
         self.screen_width = screen.width()
         self.screen_height = screen.height()
         self.output_path = os.path.join(os.getcwd(), 'output', 'predictions.csv')
-        self.realtime_path = os.path.join(os.getcwd(), 'output', 'realtime-predictions_0.csv')
+        self.realtime_path = os.path.join(os.getcwd(), 'output')
         print(f"{self.screen_width}x{self.screen_height}")
         self.setWindowTitle("Wireless Extraction")
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
@@ -103,6 +103,9 @@ class WirelessExtraction(QMainWindow):
         self.connect_ip_button.clicked.connect(self.connect_ipcam)
         self.upload_button.clicked.connect(self.upload)
         
+        self.go_back_watch_btn = self.findChild(QPushButton, 'go_back')
+        self.go_back_watch_btn.clicked.connect(self.go_back_watch)
+        
         self.ipcam_thread = []
         self.start_detection_ip = self.findChild(QPushButton, 'start_detection_camera')
         self.stop_processing_button = self.findChild(QPushButton, 'stop_processing')
@@ -114,18 +117,30 @@ class WirelessExtraction(QMainWindow):
         
     def __contains__(self, attribute):
         return hasattr(self, attribute)
+    
+    def go_back_watch(self):
+        # print(self.detection_page_controller.currentIndex())
+        print("Go back button clicked")
+        self.detection_page_controller.setCurrentIndex(0)
 
     def signout(self):
         pass
 
     def start_detection_realtime(self):
-        self.detection_page_controller.setCurrentIndex(self.tables_page_index)
         for _ in range(len(self.ipcam_thread)):
             self.ipcam_thread[_].start_detection()
-        with open("realtime_predicted.csv", "w"):
-            pass
+        # with open("realtime_predicted.csv", "w"):
+        #     pass
+        
+    def watch_changes(self, idx):
+        self.detection_page_controller.setCurrentIndex(self.tables_page_index)
+        if 'realtime-predictions' not in self.realtime_path:
+            self.realtime_path += f"/realtime-predictions_{idx}.csv"
+            print(self.realtime_path)
+        
         self.ip_watcher = QFileSystemWatcher([self.realtime_path])
         self.ip_watcher.fileChanged.connect(lambda: self.update_table(self.realtime_path, self.realtime_detection_table))
+
         
         
     def stop_processing_ipcam(self):
@@ -149,7 +164,10 @@ class WirelessExtraction(QMainWindow):
         widget = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(QLabel())
-        layout.addWidget(QPushButton("Watch changes"))
+        button = QPushButton("Watch changes")
+        button.setFont(QFont("Segoe UI", 10))
+        button.setStyleSheet("QPushButton {background-color: rgb(217, 217, 217); padding: 16px; padding-left: 24px; padding-right: 24px; border-radius: 12px; margin-right: 12px;} QPushButton:hover { background-color: #BBBBBB; border: 1px solid black;}")
+        layout.addWidget(button)
         widget.setLayout(layout)
         self.ip_window_label.append(widget)
         # self.ip_window_label.append(QLabel())
@@ -182,6 +200,7 @@ class WirelessExtraction(QMainWindow):
         self.ip_window_label[idx].layout().itemAt(0).widget().setPixmap(QtGui.QPixmap.fromImage(qImg))   
         self.ip_window_label[idx].layout().itemAt(0).widget().setScaledContents(True)
         self.ip_window_label[idx].layout().itemAt(0).widget().setSizePolicy(QSizePolicy.Ignored, QSizePolicy.Ignored)
+        self.ip_window_label[idx].layout().itemAt(1).widget().clicked.connect(lambda: self.watch_changes(idx))
         
                 
     def upload(self):
@@ -219,7 +238,7 @@ class WirelessExtraction(QMainWindow):
         self.watcher = QFileSystemWatcher([self.output_path])
         self.watcher.fileChanged.connect(lambda: self.update_table(self.output_path, self.detection_table))
 
-        #start new thread for detection
+        #start new thread for detection        
         
     def update_table(self, filename, table):
         with open(filename, 'r') as csvfile:
