@@ -6,14 +6,32 @@ import cv2
 import csv
 from PyQt5.QtCore import QThread, pyqtSignal
 
+#cam-01-date
+    #2023-04-10 13:53:23.885547.jpg
+    #2023-04-10 13:53:23.885547.jpg
+    #2023-04-10 13:53:23.885547.jpg
+    #2023-04-10 13:53:23.885547.jpg
+
 class DThread(QThread):
     def __init__(self, q, label_id, model):
         super().__init__()
         self.q = q
         self.label_id = label_id
         self.model = model
+        self.model.conf=0.50
+        self.model.iou=0.05
+        self.model.multi_label = False
+        self.model.max_det = 18
+        self.timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.file_time = self.timestamp.replace(":", "_")
+        self.file_time = self.file_time.replace(" ","-")
+        self.frames_directory = os.path.join(os.getcwd(), '.intermediate', f"cam-{self.label_id}-{str(self.file_time)}")
+
         self.output_path = os.path.join(os.getcwd(), 'output', f'realtime-predictions_{self.label_id}.csv')
         self.test_path = os.path.join(os.getcwd(), '.intermediate', f'test_dataset_{self.label_id}.csv')
+
+        if not os.path.exists(self.frames_directory):
+            os.makedirs(self.frames_directory)
 
     def run(self):
         self.frame = self.q.get()
@@ -21,6 +39,21 @@ class DThread(QThread):
 
         print("Detection module starting...")
         self.captured_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1
+        thickness = 2
+        color = (0, 0, 255) # BGR format
+
+        # Get the size of the text
+        text_size, _ = cv2.getTextSize(self.timestamp, font, font_scale, thickness)
+
+        # Compute the position of the text
+        text_x = self.frame.shape[1] - text_size[0] - 10
+        text_y = self.frame.shape[0] - text_size[1] - 10
+        cv2.putText(self.frame, self.timestamp, (text_x, text_y), font, font_scale, color, thickness)
+        img_name = self.timestamp.replace(":", "-")
+        img_name = img_name.replace(" ", "_")
+        cv2.imwrite(os.path.join(self.frames_directory, f'{img_name}.jpg'), self.frame)
         result = self.model(self.captured_frame, size=960)
         print(result)
 
@@ -106,4 +139,3 @@ class DThread(QThread):
 
 
         # self.detect_digits.emit(True)
-

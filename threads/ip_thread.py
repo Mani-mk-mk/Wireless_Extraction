@@ -21,7 +21,7 @@ class IpThread(QThread):
         super().__init__()
         self.stream_id = stream_id
         self.model = model
-        self.stopped = True
+        self.stopped = False
         self.label_id = label_id
         self.output_path = os.path.join(os.getcwd(), 'output', 'realtime-predictions.csv')
         # print(self.output_path)
@@ -49,6 +49,8 @@ class IpThread(QThread):
             exit(0)
             
         while True:
+            if self.stopped:
+                break
             ret, self.frame = self.vcap.read()
             if not ret:
                 break
@@ -71,6 +73,5 @@ class IpThread(QThread):
     
     def stop(self):
         self.stopped = True
-        self.wait()
         
 

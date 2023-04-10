@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 
@@ -144,7 +145,22 @@ class WirelessExtraction(QMainWindow):
         
         
     def stop_processing_ipcam(self):
-        self.ipcam_thread.stop()
+        for _ in range(len(self.ipcam_thread)):
+            self.ipcam_thread[_].stop()
+            self.ipcam_thread[_].wait()
+        for file in os.listdir(os.path.join(os.getcwd(), '.intermediate')):
+            if os.path.isdir(os.path.join(os.getcwd(), '.intermediate', file)):
+                print(file)
+                fourcc = cv2.VideoWriter_fourcc('m', 'p', '4', 'v') 
+                video = cv2.VideoWriter(os.path.join(os.getcwd(), 'output', 'video', f'{file}.mp4'), fourcc, 1.0, (1920,1080))
+                for img_name in os.listdir(os.path.join(os.getcwd(), '.intermediate', file)):
+                    img_path = os.path.join(os.getcwd(), '.intermediate', file, img_name)
+                    # print(img_path)
+                    frame = cv2.imread(img_path)
+                    video.write(frame)
+                video.release()
+                shutil.rmtree(os.path.join(os.getcwd(), '.intermediate', file))# self.home_page_controller(0)
+        
         
     def go_to_home(self):
         self.page_controller.setCurrentIndex(self.home_page_index)
