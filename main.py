@@ -155,8 +155,10 @@ class WirelessExtraction(QMainWindow):
         self.set_val_label_path()
         self.set_val_image_path()
         self.start_training_btn = self.findChild(QPushButton, 'start_training')
-
+        self.resume_training_btn = self.findChild(
+            QPushButton, 'resume_training')
         self.start_training_btn.clicked.connect(self.start_training_model)
+        self.resume_training_btn.clicked.connect(self.resume_training_model)
 
     def __contains__(self, attribute):
         return hasattr(self, attribute)
@@ -271,9 +273,12 @@ class WirelessExtraction(QMainWindow):
         subprocess.Popen(command.split(), shell=True)
         os.chdir("../")
 
-    def resume_training(self):
+    def resume_training_model(self):
         os.chdir("yolov5")
-        command = "python train.py --img 960 --batch 16 --epochs 100 --data dataset.yaml --weights yolov5s.pt --cache --resume /content/gdrive/MyDrive/YOLOv5Character/yolov5/runs/train/exp3/weights/last.pt"
+        path, _ = QFileDialog.getOpenFileName(
+            self, 'Open pth File', os.path.expanduser("~"), "PTH Files (*.pt)")
+        print(path)
+        command = f"python train.py --img 960 --batch 16 --epochs 100 --data dataset.yaml --weights yolov5s.pt --cache --resume {path}"
         subprocess.Popen(command.split(), shell=True)
         os.chdir("../")
 
@@ -396,9 +401,7 @@ class WirelessExtraction(QMainWindow):
             padding: 5px;
             }
 
-            QPushButton:hover {
-            background-color: #333333;
-            }""")
+            QPushButton:hover {background-color: #333333;}""")
 
         layout.addWidget(self.rtsp_1)
         layout.addWidget(self.rtsp_2)
