@@ -35,3 +35,6 @@ for file in os.listdir(os.path.join(os.getcwd(), '.intermediate')):
 
 # Resume the training
 "!python train.py --img 960 --batch 16 --epochs 100 --data dataset.yaml --weights yolov5s.pt --cache --resume /content/gdrive/MyDrive/YOLOv5Character/yolov5/runs/train/exp3/weights/last.pt"
+
+
+# Intermediate file

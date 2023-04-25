@@ -15,8 +15,8 @@ from threads.ip_thread import IpThread
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import QFont
 from PyQt5.QtCore import Qt, QPropertyAnimation, QFileSystemWatcher
-from PyQt5.QtWidgets import QLabel, QApplication, QFileDialog, QTableWidget, QSizePolicy, QLineEdit
-from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog, QGridLayout
+from PyQt5.QtWidgets import QLabel, QDialog, QApplication, QFileDialog, QTableWidget, QSizePolicy, QLineEdit, QRadioButton
+from PyQt5.QtWidgets import QPushButton, QFrame, QMainWindow, QStackedWidget, QDesktopWidget, QInputDialog, QGridLayout, QVBoxLayout
 from PyQt5 import uic
 from ui import resources
 import labelImg
@@ -95,8 +95,7 @@ class WirelessExtraction(QMainWindow):
             lambda: self.page_controller.setCurrentIndex(self.training_page_index))
         self.about_menu_button.clicked.connect(
             lambda: self.page_controller.setCurrentIndex(self.about_page_index))
-        self.signout_menu_button.clicked.connect(
-            lambda: self.page_controller.setCurrentIndex(self.signout_page_index))
+        self.signout_menu_button.clicked.connect(self.signout)
 
         # toggle button
         self.toggle_menu_button = self.findChild(QPushButton, 'toggle_button')
@@ -139,10 +138,14 @@ class WirelessExtraction(QMainWindow):
             QPushButton, 'start_detection_camera')
         self.stop_processing_button = self.findChild(
             QPushButton, 'stop_processing')
+        self.stop_processing_all = self.findChild(
+            QPushButton, 'stop_processing_all')
+
         self.go_back_detection = self.findChild(QPushButton, 'go_back_camera')
 
         self.start_detection_ip.clicked.connect(self.start_detection_realtime)
         self.stop_processing_button.clicked.connect(self.stop_processing_ipcam)
+        self.stop_processing_all.clicked.connect(self.stop_processing_ipcam)
         self.go_back_detection.clicked.connect(self.connect_ipcam)
 
         self.findChild(QPushButton, 'full_dataset_btn').clicked.connect(
@@ -275,7 +278,10 @@ class WirelessExtraction(QMainWindow):
         os.chdir("../")
 
     def signout(self):
-        pass
+        from login import LoginWindow
+        self.close()
+        self.login_window = LoginWindow()
+        self.login_window.show()
 
     def start_detection_realtime(self):
         for _ in range(len(self.ipcam_thread)):
@@ -335,10 +341,89 @@ class WirelessExtraction(QMainWindow):
         if self.home_page_controller.currentIndex() != 1:
             print('Not one')
             self.home_page_controller.setCurrentIndex(1)
-        input_stream, ok = QInputDialog.getText(
-            self, 'IP Address', 'Enter IP Address: ')
-        if ok:
-            self.set_ipcam_position(input_stream)
+        self.dlg = QDialog(self)
+        self.dlg.setWindowTitle("Select RTSP stream:")
+        layout = QVBoxLayout(self)
+        self.dlg.setLayout(layout)
+        self.rtsp_1 = QRadioButton("rtsp://192.168")
+        self.rtsp_2 = QRadioButton("rtsp://192.168")
+        self.input_stream = QLineEdit("")
+        submit = QPushButton("Submit")
+        cancel = QPushButton("Cancel")
+
+        self.dlg.setStyleSheet("""QDialog {
+            background-color: #F2F2F2;
+            border: 1px solid #CCCCCC;
+            border-radius: 5px;
+            padding: 10px;
+            }
+
+            QRadioButton {
+            font-size: 14px;
+            color: #333333;
+            }
+
+            QLineEdit {
+            font-size: 14px;
+            color: #333333;
+            background-color: #FFFFFF;
+            border: 1px solid #CCCCCC;
+            border-radius: 5px;
+            padding: 5px;
+            }
+
+            QRadioButton::indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            border: 2px solid #CCCCCC;
+            }
+
+            QRadioButton::indicator:checked {
+            background-color: #555555;
+            border-color: #555555;
+            }
+
+            QRadioButton::indicator:hover {
+            border-color: #555555;
+            }
+
+            QPushButton {
+            background-color: #555555;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 5px;
+            padding: 5px;
+            }
+
+            QPushButton:hover {
+            background-color: #333333;
+            }""")
+
+        layout.addWidget(self.rtsp_1)
+        layout.addWidget(self.rtsp_2)
+        layout.addWidget(self.input_stream)
+        layout.addWidget(submit)
+        layout.addWidget(cancel)
+
+        submit.clicked.connect(self.submit_streamlink)
+        cancel.clicked.connect(lambda: self.dlg.reject())
+
+        self.dlg.exec()
+        # input_stream, ok = QInputDialog.getText(
+        #     self, 'IP Address', 'Enter IP Address: ')
+        # if ok:
+        #     self.set_ipcam_position(input_stream)
+
+    def submit_streamlink(self):
+        if self.rtsp_1.isChecked():
+            link = self.rtsp_1.text()
+        elif self.rtsp_2.isChecked():
+            link = self.rtsp_2.text()
+        else:
+            link = self.input_stream.text()
+        self.set_ipcam_position(link)
+        self.dlg.reject()
 
     def set_ipcam_position(self, input_stream):
         print(input_stream)
@@ -459,12 +544,6 @@ class WirelessExtraction(QMainWindow):
         self.animation.setEndValue(updated_width)
         self.animation.setEasingCurve(QtCore.QEasingCurve.InOutQuart)
         self.animation.start()
-
-    def logout(self):
-        print("Logout...")
-        self.close()
-    #     self.main_window = LoginWindow()
-    #     self.main_window.show()
 
 
 if __name__ == "__main__":
