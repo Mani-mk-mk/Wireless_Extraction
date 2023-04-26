@@ -7,6 +7,8 @@ import sys
 import csv
 import cv2
 
+
+
 from threads.upload_thread import WorkerThread
 from threads.frames_thread import FramesThread
 from threads.detection_thread import DetectionThread
