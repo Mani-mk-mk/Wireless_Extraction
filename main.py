@@ -7,6 +7,8 @@ import sys
 import csv
 import cv2
 
+
+
 from threads.upload_thread import WorkerThread
 from threads.frames_thread import FramesThread
 from threads.detection_thread import DetectionThread
@@ -319,6 +321,8 @@ class WirelessExtraction(QMainWindow):
         for file in os.listdir(os.path.join(os.getcwd(), '.intermediate')):
             directory = os.path.join(os.getcwd(), '.intermediate', file)
             if os.path.isdir(directory):
+                if len(os.listdir(directory)) == 0:
+                    continue
                 path = os.listdir(os.path.join(
                     os.getcwd(), '.intermediate', file))[0]
                 path = os.path.join(os.getcwd(), '.intermediate', file, path)
@@ -350,8 +354,8 @@ class WirelessExtraction(QMainWindow):
         self.dlg.setWindowTitle("Select RTSP stream:")
         layout = QVBoxLayout(self)
         self.dlg.setLayout(layout)
-        self.rtsp_1 = QRadioButton("rtsp://192.168")
-        self.rtsp_2 = QRadioButton("rtsp://192.168")
+        self.rtsp_1 = QRadioButton("rtsp://192.168.4.101:8554/mjpeg/1")
+        self.rtsp_2 = QRadioButton("rtsp://192.168.4.103:8554/mjpeg/1")
         self.input_stream = QLineEdit("")
         submit = QPushButton("Submit")
         cancel = QPushButton("Cancel")
