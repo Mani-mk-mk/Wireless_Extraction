@@ -11,6 +11,7 @@ from threads.upload_thread import WorkerThread
 from threads.frames_thread import FramesThread
 from threads.detection_thread import DetectionThread
 from threads.ip_thread import IpThread
+from db import add_stream_links, get_stream_links
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import QFont
@@ -26,7 +27,7 @@ import labelImg
 
 
 class WirelessExtraction(QMainWindow):
-    def __init__(self, model):
+    def __init__(self, model, user_id):
         super(WirelessExtraction, self).__init__()
         uic.loadUi("./ui/interface.ui", self)
         screen = QDesktopWidget().screenGeometry()
@@ -40,6 +41,8 @@ class WirelessExtraction(QMainWindow):
         self.frames_directory = os.path.join(os.getcwd(), 'frames')
 
         self.model = model
+        self.user_id = user_id
+        print(self.user_id)
         self.paths_train = {
             'full_dataset': None,
             'train_images': None,
@@ -79,6 +82,12 @@ class WirelessExtraction(QMainWindow):
         self.about_menu_button = self.findChild(QPushButton, 'info_button')
         self.signout_menu_button = self.findChild(
             QPushButton, 'signout_button')
+        self.settings_menu_button = self.findChild(
+            QPushButton, 'settings_button')
+
+        self.settings_menu_button.clicked.connect(
+            lambda: self.page_controller.setCurrentIndex(self.history_page_index))
+
         self.grid_layout = self.findChild(QGridLayout, 'gridLayout_2')
         self.label_id = -1
         self.tifr_logo = self.findChild(QLabel, 'label_11')
@@ -141,6 +150,9 @@ class WirelessExtraction(QMainWindow):
         self.stop_processing_all = self.findChild(
             QPushButton, 'stop_processing_all')
 
+        self.stream_link_button = self.findChild(QPushButton, 'stream_link')
+        self.stream_link_button.clicked.connect(self.set_stream_link)
+
         self.go_back_detection = self.findChild(QPushButton, 'go_back_camera')
 
         self.start_detection_ip.clicked.connect(self.start_detection_realtime)
@@ -171,6 +183,26 @@ class WirelessExtraction(QMainWindow):
     # To get the right path for training data
     def browse_files(self):
         return QFileDialog.getExistingDirectory(self, 'Select directory')
+
+    def set_stream_link(self):
+        self.stream_dialog = QDialog(self)
+        self.stream_dialog.setWindowTitle("Add RTSP Stream link")
+        layout = QVBoxLayout(self)
+        self.stream_dialog.setLayout(layout)
+        self.stream_text = QLineEdit("")
+        self.add_streamlink_btn = QPushButton("Add Stream")
+        self.add_streamlink_btn.clicked.connect(self.insert_stream)
+        layout.addWidget(self.stream_text)
+        layout.addWidget(self.add_streamlink_btn)
+
+        self.stream_dialog.exec()
+
+    def insert_stream(self):
+        try:
+            add_stream_links(self.user_id, self.stream_text.text())
+        except Exception as e:
+            print(e)
+        self.stream_dialog.reject()
 
     def set_full_dataset_path(self):
         path = self.browse_files()
@@ -350,8 +382,13 @@ class WirelessExtraction(QMainWindow):
         self.dlg.setWindowTitle("Select RTSP stream:")
         layout = QVBoxLayout(self)
         self.dlg.setLayout(layout)
-        self.rtsp_1 = QRadioButton("rtsp://192.168")
-        self.rtsp_2 = QRadioButton("rtsp://192.168")
+        links = get_stream_links(self.user_id)
+        self.rtsp_radiobuttons = []
+        for link in links:
+            btn = QRadioButton(link)
+            self.rtsp_radiobuttons.append(btn)
+        # self.rtsp_1 = QRadioButton("rtsp://192.168.4.101:8554/mjpeg/1")
+        # self.rtsp_2 = QRadioButton("rtsp://192.168.4.103:8554/mjpeg/1")
         self.input_stream = QLineEdit("")
         submit = QPushButton("Submit")
         cancel = QPushButton("Cancel")
@@ -403,8 +440,11 @@ class WirelessExtraction(QMainWindow):
 
             QPushButton:hover {background-color: #333333;}""")
 
-        layout.addWidget(self.rtsp_1)
-        layout.addWidget(self.rtsp_2)
+        for btn in self.rtsp_radiobuttons:
+            layout.addWidget(btn)
+
+        # layout.addWidget(self.rtsp_1)
+        # layout.addWidget(self.rtsp_2)
         layout.addWidget(self.input_stream)
         layout.addWidget(submit)
         layout.addWidget(cancel)
@@ -419,12 +459,18 @@ class WirelessExtraction(QMainWindow):
         #     self.set_ipcam_position(input_stream)
 
     def submit_streamlink(self):
-        if self.rtsp_1.isChecked():
-            link = self.rtsp_1.text()
-        elif self.rtsp_2.isChecked():
-            link = self.rtsp_2.text()
-        else:
+        link = next(
+            (btn.text()
+             for btn in self.rtsp_radiobuttons if btn.isChecked()), None
+        )
+        if link is None:
             link = self.input_stream.text()
+        # if self.rtsp_1.isChecked():
+        #     link = self.rtsp_1.text()
+        # elif self.rtsp_2.isChecked():
+        #     link = self.rtsp_2.text()
+        # else:
+        #     link = self.input_stream.text()
         self.set_ipcam_position(link)
         self.dlg.reject()
 

@@ -5,6 +5,7 @@ from PyQt5 import uic
 from PyQt5 import QtSql
 from PyQt5.QtWidgets import QLabel, QApplication, QLineEdit
 from PyQt5.QtWidgets import QPushButton, QMainWindow, QStackedWidget, QDesktopWidget
+from db import login, signup, user_exists
 
 from main import WirelessExtraction
 
@@ -69,13 +70,8 @@ class LoginWindow(QMainWindow):
         self.username = self.username_login.text()
         password = self.password_login.text()
 
-        self.query.exec_(
-            "select * from user where username = '%s' and password = '%s';" % (self.username, password))
-        self.query.first()
-        if (
-            self.query.value("username") is None
-            or self.query.value("password") is None
-        ):
+        status = login(self.query, self.username, password)
+        if not status:
             return self.set_login_status(
                 "Login Failed!",
                 "Invalid email or password. Please try again",
@@ -88,7 +84,8 @@ class LoginWindow(QMainWindow):
             "color: green; font-weight: bold;",
             True,
         )
-        self.main_window = WirelessExtraction(self.model)
+        self.main_window = WirelessExtraction(
+            self.model, self.query.value("id"))
         self.close()
         self.main_window.show()
 
@@ -111,9 +108,7 @@ class LoginWindow(QMainWindow):
             self.signup_status.setStyleSheet("color: red; font-weight: bold;")
             return False
 
-        self.query.exec_(f"select * from user where username= '{username}'")
-        self.query.first()
-        if self.query.value("username") is not None:
+        if user_exists(self.query, username):
             self.signup_status.setText(
                 "A user with that username already exists.")
             self.signup_status.setStyleSheet("color: red; font-weight: bold;")
@@ -125,11 +120,8 @@ class LoginWindow(QMainWindow):
                 "Passwords do not match. Please try again.")
             self.signup_status.setStyleSheet("color: red; font-weight: bold;")
             return False
-        try:
-            self.query.exec_(
-                f"insert into user (username, email, password) values ('{username}', '{email}', '{password}');")
-        except Exception as e:
-            print(e)
+
+        signup(self.query, username, email, password)
 
         print("User created successfully")
         self.signup_status.setText(
